@@ -1,0 +1,9 @@
+npm i passport passport-google-oauth20
+
+
+https://console.developers.google.com/
+
+-create app
+-enable google+ api
+-create credentials - OAuth client ID ->Authorized JS origins: http://localhost:5000, Auth redirect URIs: http://localhost:5000/auth/google/callback)
+-fill OAuth consent screen

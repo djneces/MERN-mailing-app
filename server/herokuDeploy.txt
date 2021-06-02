@@ -1,0 +1,6 @@
+package.json: set engines, start script
+
+git init, git commit, 
+.gitignore
+heroku create
+git push heroku master
