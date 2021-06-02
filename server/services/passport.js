@@ -30,6 +30,8 @@ passport.use(
       clientSecret: keys.googleClientSecret,
       //URL to redirect user after they are granted access by Google
       callbackURL: '/auth/google/callback',
+      //we need to trust Heroku's proxy (there was a http vs https callback path error)
+      proxy: true,
     },
     (accessToken, refreshToken, profile, done) => {
       //check if user exists
