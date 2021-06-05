@@ -33,21 +33,17 @@ passport.use(
       //we need to trust Heroku's proxy (there was a http vs https callback path error)
       proxy: true,
     },
-    (accessToken, refreshToken, profile, done) => {
+    async (accessToken, refreshToken, profile, done) => {
       //check if user exists
-      User.findOne({ googleId: profile.id }).then((existingUser) => {
-        if (existingUser) {
-          //when finished => call done (1st argument is err)
-          done(null, existingUser);
-        } else {
-          //saving user into the DB
-          new User({ googleId: profile.id })
-            .save()
-            //user-> newly created user, we use this one -> reflecting possible changes while saving into DB
-            .then((user) => done(null, user))
-            .catch((err) => console.log(err));
-        }
-      });
+      const existingUser = await User.findOne({ googleId: profile.id });
+      if (existingUser) {
+        //when finished => call done (1st argument is err)
+        return done(null, existingUser);
+      }
+      //saving user into the DB
+      const user = await new User({ googleId: profile.id }).save();
+      //user-> newly created user, we use this one -> reflecting possible changes while saving into DB
+      done(null, user);
     }
   )
 );
