@@ -17,6 +17,9 @@ mongoose.connect(keys.mongoURI, {
 
 const app = express();
 
+//middleware instead of body parser
+app.use(express.json());
+
 //app.use - middleware before route handlers
 //cookie.session contains _id (user Id in the DB), that passes over to passport
 app.use(
@@ -33,6 +36,7 @@ app.use(passport.session());
 
 //we don't need to use extra var (const authRoutes = require('./routes/authRoutes'), and then here authRoutes(app))
 require('./routes/authRoutes')(app);
+require('./routes/billingRoutes')(app);
 
 const PORT = process.env.PORT || 5000;
 app.listen(PORT);
