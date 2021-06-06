@@ -12,7 +12,7 @@ export class Header extends Component {
         return (
           <li>
             {/* use a tag to navigate to different domain, within the app I'd use Link */}
-            <a href='/auth/google'>Login with Google</a>
+            <a href='/auth/google'>Login Google</a>
           </li>
         );
       default:
