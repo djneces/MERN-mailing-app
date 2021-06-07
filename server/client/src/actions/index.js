@@ -11,3 +11,9 @@ export const handleToken = (token) => async (dispatch) => {
   //fetch the user with updated credits by the server, reusing the fetch user action
   dispatch({ type: FETCH_USER, payload: res.data });
 };
+
+export const submitSurvey = (values, history) => async (dispatch) => {
+  const res = await axios.post('/api/surveys', values);
+  history.push('/surveys');
+  dispatch({ type: FETCH_USER, payload: res.data });
+};
