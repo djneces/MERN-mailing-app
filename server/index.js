@@ -7,6 +7,7 @@ const passport = require('passport');
 const keys = require('./config/keys');
 //we need to define User before passport
 require('./models/User');
+require('./models/Survey');
 //we just need to require the file, there is no export in passport.js
 require('./services/passport');
 
@@ -37,6 +38,7 @@ app.use(passport.session());
 //we don't need to use extra var (const authRoutes = require('./routes/authRoutes'), and then here authRoutes(app))
 require('./routes/authRoutes')(app);
 require('./routes/billingRoutes')(app);
+require('./routes/surveyRoutes')(app);
 
 //prod environment (Heroku)
 if (process.env.NODE_ENV === 'production') {

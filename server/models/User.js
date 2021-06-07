@@ -9,4 +9,5 @@ const userSchema = new Schema({
 
 //users - name of the collection
 //load the schema into mongoose
+//require it in index.js
 mongoose.model('users', userSchema);

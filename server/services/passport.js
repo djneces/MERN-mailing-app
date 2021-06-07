@@ -34,16 +34,20 @@ passport.use(
       proxy: true,
     },
     async (accessToken, refreshToken, profile, done) => {
-      //check if user exists
-      const existingUser = await User.findOne({ googleId: profile.id });
-      if (existingUser) {
-        //when finished => call done (1st argument is err)
-        return done(null, existingUser);
+      try {
+        //check if user exists
+        const existingUser = await User.findOne({ googleId: profile.id });
+        if (existingUser) {
+          //when finished => call done (1st argument is err)
+          return done(null, existingUser);
+        }
+        //saving user into the DB
+        const user = await new User({ googleId: profile.id }).save();
+        //user-> newly created user, we use this one -> reflecting possible changes while saving into DB
+        done(null, user);
+      } catch (error) {
+        console.log(error, 'could not fetch user from the DB');
       }
-      //saving user into the DB
-      const user = await new User({ googleId: profile.id }).save();
-      //user-> newly created user, we use this one -> reflecting possible changes while saving into DB
-      done(null, user);
     }
   )
 );
