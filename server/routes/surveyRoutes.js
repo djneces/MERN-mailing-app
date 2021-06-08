@@ -1,3 +1,7 @@
+const _ = require('lodash');
+const { Path } = require('path-parser');
+//default in Node.js
+const { URL } = require('url');
 const mongoose = require('mongoose');
 const requireLogin = require('../middlewares/requireLogin');
 const requireCredits = require('../middlewares/requireCredits');
@@ -9,9 +13,60 @@ const surveyTemplate = require('../services/emailTemplates.js/surveyTemplate');
 const Survey = mongoose.model('surveys');
 
 module.exports = (app) => {
+  app.get('/api/surveys', requireLogin, async (req, res) => {
+    const surveys = await Survey.find({
+      _user: req.user.id,
+      //not to include recipients in the query - saves a lot of data
+    }).select({ recipients: false });
+
+    res.send(surveys);
+  });
+
   //response once user votes
-  app.get('/api/surveys/thanks/', (req, res) => {
+  app.get('/api/surveys/:surveyId/:choice', (req, res) => {
     res.send('Thanks for voting!');
+  });
+
+  app.post('/api/surveys/webhooks/', (req, res) => {
+    const p = new Path('/api/surveys/:surveyId/:choice');
+    //filter and modify results from the webhook sendgrid
+    _.chain(req.body)
+      .map(({ email, url }) => {
+        //new URL() -> extract just path name from the url (/api/surveys/1234/yes)
+        //p.test() -> get the survey id and the choice (Path needs :), returns {with surveyId and choice as keys} or null
+        //matcher
+        const match = p.test(new URL(url).pathname);
+        if (match) {
+          return { email, surveyId: match.surveyId, choice: match.choice };
+        }
+      })
+      //removes all undefined
+      .compact()
+      //filters unique events, compares email and surveyId
+      .uniqBy('email', 'surveyId')
+      .each(({ surveyId, email, choice }) => {
+        //query and update in mongoDB
+        Survey.updateOne(
+          {
+            //find survey with the id and matching email & responded in sub-document collection recipients array
+            _id: surveyId,
+            recipients: {
+              $elemMatch: { email: email, responded: false },
+            },
+          },
+          {
+            //increment by 1
+            $inc: { [choice]: 1 },
+            //set the responded field of matched recipient in the previous query
+            $set: { 'recipients.$.responded': true },
+            lastResponded: new Date(),
+            //we need to execute
+          }
+        ).exec();
+      })
+      .value();
+
+    res.send({});
   });
 
   //user needs to be logged in and have enough credits
